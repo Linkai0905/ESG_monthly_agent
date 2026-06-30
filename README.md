@@ -15,7 +15,7 @@
 
 <br>
 
-This repository contains a prototype workflow for preparing ESG monthly report drafts. It uses LangGraph to coordinate research planning, evidence extraction, issue-chain construction, quality checks, and Markdown report export.
+This repository contains a workflow for preparing evidence-backed ESG monthly report working papers and Markdown report outputs. It uses LangGraph to coordinate research planning, evidence extraction, issue-chain construction, quality checks, and file export.
 
 The default example is configured around China Shenhua. The command-line interface also accepts another company name, tickers, benchmark companies, and reporting period.
 
@@ -31,7 +31,7 @@ python main.py --company 中国神华 --period 2026-06 \
 ```
 
 > [!NOTE]
-> Generated reports are drafts. They should be reviewed against company data, source documents, and applicable disclosure requirements before use.
+> Generated reports are reviewable working documents. They should be checked against company data, source documents, and applicable disclosure requirements before use.
 
 ## Why use this project?
 
@@ -41,7 +41,7 @@ The project is organized around traceable report preparation rather than free-fo
 - **Typed state**: each step reads and writes Pydantic-backed structures instead of passing only prose.
 - **Separated research modes**: local/manual sources are handled separately from hosted web-search providers.
 - **Intermediate artifacts**: search tasks, provider results, events, issue chains, recommendations, and quality checks are exported as JSON.
-- **Regression tests**: tests cover schema validation, graph smoke runs, provider preflight, citation extraction, report de-duplication, and quality checks.
+- **Regression tests**: tests cover schema validation, graph execution checks, provider preflight, citation extraction, report de-duplication, and quality checks.
 
 ## Workflow
 
@@ -155,7 +155,7 @@ Copy the environment template:
 cp .env.example .env
 ```
 
-For local smoke runs, the default settings can use local or seeded evidence. For hosted web research, disable local fallback and configure at least one provider key:
+For local verification runs, the default settings can use local or seeded evidence. For hosted web research, disable local fallback and configure at least one provider key:
 
 ```bash
 ESG_USE_LOCAL_SOURCES=false
@@ -300,14 +300,15 @@ LANGSMITH_TRACING=false pytest -q
 
 The current test suite contains 48 tests.
 
-## Limitations
+## Operational scope
 
-- The project is a prototype workflow, not a disclosure system.
+- This repository focuses on report preparation: research planning, evidence capture, issue-chain construction, quality review, and Markdown/JSON export.
+- Deployment packaging, role and permission controls, audit-log retention, release policy, rollback procedure, and human approval workflow are outside the current repository scope.
 - The default material topics and benchmark companies are tuned for the China Shenhua example and should be reviewed before using another company.
 - Hosted research quality depends on provider coverage, query wording, source availability, and date filtering.
-- Local seeded evidence is suitable for smoke tests, not for a final report.
+- Local seeded evidence is intended for deterministic local verification and should not be used as final report evidence.
 - `.env`, API keys, generated `runs/` outputs, local databases, and cache files should not be committed.
-- No open-source license has been added yet.
+- Add or confirm a license before redistribution.
 
 ## Acknowledgements
 
