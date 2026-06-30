@@ -75,6 +75,61 @@ Markdown report and JSON artifacts
 
 In hosted mode, the workflow expects providers to return source URLs or citations that can be mapped back to evidence. P2/P3 media or generic search results can be retained as leads, but they are not sufficient by themselves for key factual claims.
 
+## LangGraph nodes
+
+This Mermaid graph mirrors the current `graph.py` node layout and renders directly on GitHub. The same node names appear in LangGraph Studio and LangSmith traces.
+
+```mermaid
+flowchart TD
+    START([__start__]) --> init_context
+    init_context --> pre_research_graph
+
+    pre_research_graph -->|hosted_web / deep_research / hybrid| deepsearch_research_graph
+    pre_research_graph -->|local_vector| execute_issue_aware_search
+
+    deepsearch_research_graph --> classify_events
+
+    execute_issue_aware_search --> source_quality_filter
+    source_quality_filter --> fetch_pages
+    fetch_pages --> parse_documents
+    parse_documents --> extract_evidence
+    extract_evidence --> classify_events
+
+    classify_events --> build_issue_chains
+    build_issue_chains --> assess_company_exposure
+    assess_company_exposure --> peer_benchmark
+    peer_benchmark --> synthesize_recommendations
+    synthesize_recommendations --> quality_review
+
+    quality_review -->|pass| report_writer
+    quality_review -->|repair| targeted_research_repair
+
+    targeted_research_repair -->|hosted_web / deep_research / hybrid| deepsearch_research_graph
+    targeted_research_repair -->|local_vector| execute_issue_aware_search
+
+    report_writer --> llm_report_review
+    llm_report_review --> export_files
+    export_files --> END([__end__])
+
+    classDef startEnd fill:#f8f9fa,stroke:#666,color:#222;
+    classDef setup fill:#f3e8ff,stroke:#a855f7,color:#4c1d95;
+    classDef local fill:#ecfdf5,stroke:#22c55e,color:#166534;
+    classDef hosted fill:#fff7ed,stroke:#fb923c,color:#9a3412;
+    classDef reasoning fill:#eef2ff,stroke:#6366f1,color:#312e81;
+    classDef review fill:#fdf2f8,stroke:#ec4899,color:#9d174d;
+    classDef export fill:#f0fdf4,stroke:#16a34a,color:#166534;
+
+    class START,END startEnd;
+    class init_context,pre_research_graph setup;
+    class execute_issue_aware_search,source_quality_filter,fetch_pages,parse_documents,extract_evidence local;
+    class deepsearch_research_graph hosted;
+    class classify_events,build_issue_chains,assess_company_exposure,peer_benchmark,synthesize_recommendations,report_writer,llm_report_review reasoning;
+    class quality_review,targeted_research_repair review;
+    class export_files export;
+```
+
+The local branch runs source filtering, fetch, parsing, and evidence extraction. The hosted branch skips direct page fetching and uses provider-returned citations before entering the same event and reasoning path.
+
 ## Installation
 
 Use Python 3.11.
