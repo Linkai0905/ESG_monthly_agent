@@ -77,7 +77,7 @@ In hosted mode, the workflow expects providers to return source URLs or citation
 
 ## LangGraph nodes
 
-This Mermaid graph mirrors the current `graph.py` node layout and renders directly on GitHub. The same node names appear in LangGraph Studio and LangSmith traces. The hosted branch extracts citation-backed evidence inside `deepsearch_research_graph`; the local branch extracts evidence through fetch/parse/extract nodes before both paths merge at `classify_events`.
+This Mermaid graph mirrors the current `graph.py` node layout and renders directly on GitHub. The same node names appear in LangGraph Studio and LangSmith traces. Hosted and local research do not share the green local pipeline: hosted research extracts citation-backed evidence inside `deepsearch_research_graph`, while local research extracts evidence through `execute_issue_aware_search -> source_quality_filter -> fetch_pages -> parse_documents -> extract_evidence`. Both paths merge only after evidence has been produced, at `classify_events`.
 
 ```mermaid
 flowchart TD
@@ -128,7 +128,9 @@ flowchart TD
     class export_files export;
 ```
 
-The local branch runs source filtering, fetch, parsing, and evidence extraction. The hosted branch skips direct page fetching and uses provider-returned citations before entering the same event and reasoning path. In the current `route_after_quality_review` implementation, hosted/deepsearch/hybrid runs go to report writing after quality review even when the deterministic gate does not pass; targeted repair is currently used for local repairable runs.
+The green local evidence pipeline is reused by two local scenarios: the first local research pass after `pre_research_graph`, and the local repair pass after `targeted_research_repair`. It is not used by hosted research. Hosted research skips direct page fetching and uses provider-returned citations inside `deepsearch_research_graph` before entering the shared reasoning path at `classify_events`.
+
+The structural edge from `targeted_research_repair` back to `deepsearch_research_graph` exists in `graph.py` because repair is routed with the same `route_after_pre_research` function. In normal execution, however, the current `route_after_quality_review` sends hosted/deepsearch/hybrid runs to `report_writer` after quality review, even when the deterministic gate does not pass. As a result, targeted repair is currently reachable for local repairable runs, not for hosted runs.
 
 ## Installation
 
