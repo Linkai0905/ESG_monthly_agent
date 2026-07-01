@@ -77,17 +77,17 @@ In hosted mode, the workflow expects providers to return source URLs or citation
 
 ## LangGraph nodes
 
-This Mermaid graph mirrors the current `graph.py` node layout and renders directly on GitHub. The same node names appear in LangGraph Studio and LangSmith traces.
+This Mermaid graph mirrors the current `graph.py` node layout and renders directly on GitHub. The same node names appear in LangGraph Studio and LangSmith traces. The hosted branch extracts citation-backed evidence inside `deepsearch_research_graph`; the local branch extracts evidence through fetch/parse/extract nodes before both paths merge at `classify_events`.
 
 ```mermaid
 flowchart TD
     START([__start__]) --> init_context
     init_context --> pre_research_graph
 
-    pre_research_graph -->|hosted_web / deep_research / hybrid| deepsearch_research_graph
-    pre_research_graph -->|local_vector| execute_issue_aware_search
+    pre_research_graph -->|web / hosted_web / deep_research / hybrid| deepsearch_research_graph
+    pre_research_graph -->|else / local_vector| execute_issue_aware_search
 
-    deepsearch_research_graph --> classify_events
+    deepsearch_research_graph -->|internal extract_evidence_from_deepsearch| classify_events
 
     execute_issue_aware_search --> source_quality_filter
     source_quality_filter --> fetch_pages
@@ -101,11 +101,11 @@ flowchart TD
     peer_benchmark --> synthesize_recommendations
     synthesize_recommendations --> quality_review
 
-    quality_review -->|pass| report_writer
-    quality_review -->|repair| targeted_research_repair
+    quality_review -->|passed or hosted/deepsearch/hybrid or not repairable| report_writer
+    quality_review -->|local repairable first attempt| targeted_research_repair
 
-    targeted_research_repair -->|hosted_web / deep_research / hybrid| deepsearch_research_graph
-    targeted_research_repair -->|local_vector| execute_issue_aware_search
+    targeted_research_repair -->|web / hosted_web / deep_research / hybrid| deepsearch_research_graph
+    targeted_research_repair -->|else / local_vector| execute_issue_aware_search
 
     report_writer --> llm_report_review
     llm_report_review --> export_files
@@ -128,7 +128,7 @@ flowchart TD
     class export_files export;
 ```
 
-The local branch runs source filtering, fetch, parsing, and evidence extraction. The hosted branch skips direct page fetching and uses provider-returned citations before entering the same event and reasoning path.
+The local branch runs source filtering, fetch, parsing, and evidence extraction. The hosted branch skips direct page fetching and uses provider-returned citations before entering the same event and reasoning path. In the current `route_after_quality_review` implementation, hosted/deepsearch/hybrid runs go to report writing after quality review even when the deterministic gate does not pass; targeted repair is currently used for local repairable runs.
 
 ## Installation
 
